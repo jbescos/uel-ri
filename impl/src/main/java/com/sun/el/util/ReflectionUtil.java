@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2020 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -650,7 +650,7 @@ public class ReflectionUtil {
                 int varArgIndex = parameterTypes.length - 1;
                 // First argCount-1 parameters are standard
                 for (int i = 0; (i < varArgIndex && i < paramCount); i++) {
-                    parameters[i] = context.convertToType(params[i],
+                    parameters[i] = convertToTypeAvoidEmptyStr(context, params[i],
                             parameterTypes[i]);
                 }
                 // Last parameter is the varargs
@@ -665,20 +665,27 @@ public class ReflectionUtil {
                             (paramCount - varArgIndex));
                     for (int i = (varArgIndex); i < paramCount; i++) {
                         Array.set(varargs, i - varArgIndex,
-                                context.convertToType(params[i], varArgClass));
+                                convertToTypeAvoidEmptyStr(context, params[i], varArgClass));
                     }
                     parameters[varArgIndex] = varargs;
                 }
             } else {
                 for (int i = 0; i < parameterTypes.length && i < paramCount; i++) {
-                    parameters[i] = context.convertToType(params[i],
-                            parameterTypes[i]);
+                    parameters[i] = convertToTypeAvoidEmptyStr(context, params[i], parameterTypes[i]);
                 }
             }
         }
         return parameters;
     }
-    
+
+    private static Object convertToTypeAvoidEmptyStr(ELContext context, Object param, Class<?>parameterType) {
+        if (param == null && parameterType == String.class) {
+            return null;
+        } else {
+            return context.convertToType(param, parameterType);
+        }
+    }
+
     /*
      * This method duplicates code in javax.el.ELUtil. When
      * making changes keep the code in sync.
